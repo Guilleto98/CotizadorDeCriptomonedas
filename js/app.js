@@ -25,24 +25,50 @@ document.addEventListener('DOMContentLoaded', ()=>{
     
 })
 
-function consultarCriptomonedas(){
+async function consultarCriptomonedas(){
     const url = `https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD`
 
-    fetch(url)
+/*     fetch(url)
         .then(respuesta => respuesta.json())
         .then(resultado => obtenerCriptomonedas(resultado.Data))
         .then( criptomonedas => selectCriptomonedas(criptomonedas))
+         */
+        try {
+            
+            const respuesta = await fetch(url);
+            const resultado = await respuesta.json();
+            const criptomonedas = await obtenerCriptomonedas(resultado.Data);
+            selectCriptomonedas(criptomonedas);
+        } catch (error) {
+            console.log(error)
+        }
 }
 
 function selectCriptomonedas(criptomonedas){
-    criptomonedas.forEach( cripto => {
+
+    //Conocer el tiempo de ejecución
+    const inicio = performance.now();
+
+    /* criptomonedas.forEach( cripto => {
         
         const { FullName, Name } = cripto.CoinInfo;
         const option = document.createElement('option');
         option.value = Name;
         option.textContent = FullName;
         criptomonedasSelect.appendChild(option);
-    })
+    }) */
+
+    //El for es casi el doble más rápido que el forEach()
+    for( let i = 0; i < criptomonedas.length; i++){
+        const { FullName, Name } = criptomonedas[i].CoinInfo;
+        const option = document.createElement('option');
+        option.value = Name;
+        option.textContent = FullName;
+        criptomonedasSelect.appendChild(option);
+    }
+    const fin = performance.now();
+
+    console.log( fin - inicio )
 }
 
 function leerValor(e){
@@ -84,18 +110,28 @@ function mostrarAlerta(mensaje){
     
 }
 
-function consultarAPI(){
+async function consultarAPI(){
     const { moneda, criptomoneda} = objBusqueda;
 
     const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
 
     mostrarSpinner();
 
-    fetch(url)
+/*     fetch(url)
         .then(respuesta => respuesta.json())
         .then( cotizacion => {
             mostrarCotizacionHTML(cotizacion.DISPLAY[criptomoneda][moneda])
-        })
+        }) */
+
+    try {
+        
+        const respuesta = await fetch(url);
+        const cotizacion = await respuesta.json();
+        mostrarCotizacionHTML(cotizacion.DISPLAY[criptomoneda][moneda])
+
+    } catch (error) {
+        
+    }
 }
 
 function mostrarCotizacionHTML(cotizacion){
